@@ -27,6 +27,15 @@ a b c
 1 2 5
 ```
 
+### Generate
+
+For generate the input, you can use the command:
+
+```
+cd input/
+python generate.py
+```
+
 ### Dataset
 
 Sample dataset:
