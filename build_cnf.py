@@ -1,0 +1,118 @@
+import sequential_encoding as se
+
+num_items: int
+num_transactions: int
+min_support: int
+use_se: bool
+
+clauses = []
+
+def build_cnf_for_each_transaction(values, transaction_idx):
+    print("=============++++++++START LOG++++++===============")
+    convert_p_to_q(values, transaction_idx)
+    print(clauses)
+    print("=============++++++END LOG++++++++===============")
+
+# q1 ↔ ¬p1 ^ ¬p2 ^ ¬p3
+# expect: ((¬q1 | ¬p1) & (¬q1 | ¬p2) & (¬q1 | ¬p3) & (q1 | p1 | p2 | p3))
+def convert_p_to_q(items, transaction_idx):
+    global clauses
+    indice_q = num_items + transaction_idx
+    neg_items = [item for item in items if item % 2 == 0]
+    print("Negated items:", neg_items)
+    # constaint (5)
+    clauses.extend([[-indice_q, -int(item/2+1)] for item in neg_items])
+    # constaint (6)
+    c_6 = [indice_q]
+    c_6.extend([int(item/2+1) for item in neg_items])
+    clauses.append(c_6)
+
+def at_least_k():
+    global clauses
+    # at least k: q1 + q2 + q3 + ... + qn >= k
+    c_4 = combinations(num_transactions - min_support + 1, num_transactions, num_items)
+    clauses.extend(c_4)
+    # at least 1 transaction
+    c_4_1 = [i + num_items for i in range(1,num_transactions+1)]
+    clauses.append(c_4_1)
+
+def additional_constraints():
+    global clauses
+    # at least 1 item in set
+    c = [i for i in range(1,num_items+1)]
+    clauses.append(c)
+    
+
+def at_least_k_se():
+    global clauses
+    c = se.constraints(num_transactions, min_support, num_items)
+    clauses.extend(c)
+
+
+def combinations(k, n, start_idx):
+    def backtrack(start, combination):
+        if len(combination) == k:
+            combinations_list.append(combination[:])
+            return
+        for i in range(start, n + 1):
+            combination.append(i + start_idx)
+            backtrack(i + 1, combination)
+            combination.pop()
+
+    combinations_list = []
+    backtrack(1, [])
+    return combinations_list
+
+def process_file(input_file):
+    with open(input_file) as f:
+        print("=============+++++At least k+++++++++===============")
+        if use_se:
+            at_least_k_se()
+        else:
+            at_least_k()
+        additional_constraints()
+        print(clauses)
+        print("=============+++++End At least k+++++++++===============")
+        for i, line in enumerate(f):
+            # Split the line into individual values
+            transaction_idx = i + 1
+            values = line.strip().split()
+            values = [int(value) for value in values]
+            print("Transaction", transaction_idx)
+            print(values)
+            build_cnf_for_each_transaction(values, transaction_idx)
+            
+
+def read_params(input_file):
+    global num_items, num_transactions
+    with open(input_file) as f:
+        lines = f.readlines()
+        num_transactions = len(lines)
+        num_items = int(max([int(value) for value in [int(value) for line in lines for value in line.strip().split()]])/2 + 1)
+
+def write_cnf_to_file(output_file):
+    # find max item value in clauses
+    max_item = 0
+    for clause in clauses:
+        for item in clause:
+            max_item = max(max_item, abs(item))
+    with open(output_file, 'w') as writer:
+                # Write a line of information about the number of variables and constraints
+                writer.write("p cnf " + str(max_item) + " " + str(len(clauses)) + "\n")
+                # Write each clause to the file
+                for clause in clauses:
+                    for literal in clause:
+                        writer.write(str(literal) + " ")
+                    writer.write("0\n")
+    print("CNF written to " + output_file)
+
+def run(input_file = './input/converted_raw_data.txt', output_file = './input/input.cnf', min_supp = 6, i_use_se = False):
+    global min_support, use_se
+    min_support = min_supp
+    use_se = i_use_se
+    read_params(input_file)
+    process_file(input_file)
+    write_cnf_to_file(output_file)
+    return num_items, num_transactions, min_support
+
+# run()

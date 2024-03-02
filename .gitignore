@@ -1,0 +1,5 @@
+/input/*
+/output/sequential_encoding/*
+/output/standard/*
+/kissat
+/__pycache__
