@@ -40,7 +40,7 @@ def process(input_raw_data: str = "./input/converted_raw_data.txt",
         call_kissat(path_cnf,output_folder + prefix_raw_output, time_out, n_solutions)
         # if n_solutions > 10:
         #     break
-        
+
     elapsed_time = time.time() - start_time
     return n_solutions, n_vars, n_clauses, elapsed_time
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     parser.add_argument('--output-folder', type=str, default='./output/standard/', help='Path to the output folder', required=False, dest='output_folder')
     parser.add_argument('--prefix-raw-output', type=str, default='raw_', help='Prefix for the raw output files', required=False, dest='prefix_raw_output')
     parser.add_argument('--merged-name', type=str, default='merged_equation.txt', help='Name of the merged equation file', required=False, dest='merged_name')
-    parser.add_argument('--use-se', type=bool, default=False, help='Use sequential encoding', required=False, dest='use_se')
+    parser.add_argument('--use-se', type=bool, default=True, help='Use sequential encoding', required=False, dest='use_se')
     parser.add_argument('--time-out', type=int, default=900, help='Time out for kissat', required=False, dest='time_out')
     args = parser.parse_args()
     process(args.input_raw_data, args.path_cnf, args.min_support, args.output_folder, args.prefix_raw_output, args.merged_name, args.use_se, args.time_out)

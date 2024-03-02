@@ -43,21 +43,24 @@ Sample dataset:
 - https://dtai.cs.kuleuven.be/CP4IM/datasets/
 - http://fimi.uantwerpen.be/data/
 
-## Run
+## Build Kissat
 
-### Build Kissat
+This project using kissat as the SAT solver. So you need to build kissat first.
 
 Clone the kissat repository from
 https://github.com/arminbiere/kissat
+and move the kissat folder to the root of this project.
 
-And build kissat by using command (only for the first time):
+Then build kissat by following command (only for the first time):
 
 ```
 cd kissat
 ./configure && make test
 ```
 
-### Run the code
+## Run
+
+### Run a single input
 
 For run an input with selected solution, you can using `main.py`. Show the help message:
 
