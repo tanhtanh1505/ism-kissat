@@ -1,6 +1,7 @@
 import subprocess
 import main as m
 import helper as h
+import time
 
 def run_script(
     input_raw_data: str = "./input/converted_raw_data.txt",
@@ -33,10 +34,10 @@ def get_info(input):
 
 def benchmark():
     inputs = [
-        ("./input/converted_raw_data.txt", 6),
-        ("./input/input_20_trans.txt", 8),
-        ("./input/input_25_trans.txt", 9),
-        ("./input/input_28_trans.txt", 10),
+        ("./input/10_trans_6_items.txt", 6),
+        # ("./input/input_20_trans.txt", 8),
+        # ("./input/input_25_trans.txt", 9),
+        # ("./input/input_28_trans.txt", 10),
         # ("./input/input_30_trans.txt", 8),
     ]
     excel_results = []
@@ -54,7 +55,7 @@ def benchmark():
         n_solutions, n_vars, n_clauses, elapsed_time = m.process(
             input_raw_data=input_raw_data,
             min_support=min_support,
-            find_all=False)
+            find_all=True)
         print("Standard:", n_items, n_transactions, min_support, n_solutions, n_vars, n_clauses)
         result["standard/vars"] = n_vars
         result["standard/clauses"] = n_clauses
@@ -67,7 +68,7 @@ def benchmark():
             min_support=min_support,
             use_se=True,
             output_folder="./output/sequential_encoding/",
-            find_all=False)
+            find_all=True)
         print("Sequential encoding:", n_items, n_transactions, min_support, n_solutions, n_vars, n_clauses)
         result["sequential_encoding/vars"] = n_vars
         result["sequential_encoding/clauses"] = n_clauses
@@ -75,7 +76,9 @@ def benchmark():
         result["sequential_encoding/time"] = elapsed_time
 
         excel_results.append(result)
-    h.write_data_to_excel(excel_results, "./output/benchmark.xlsx")
+    #get unique file name
+    name = time.strftime("%Y%m%d_%H%M%S")
+    h.write_data_to_excel(excel_results, "./output/benchmark_"+name+".xlsx")
     
 
 if __name__ == "__main__":

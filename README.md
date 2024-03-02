@@ -1,40 +1,33 @@
-## Rule
-
 ## Input
 
-You can use input in raw data
+### Rule
 
-Example: /input/raw_data.txt
-
-```
-0 0 1 0 1 1 1 0
-0 1 0 1 1 1 1 1
-1 1 0 1 0 0 0 0
-1 1 0 1 0 1 0 1
-0 1 1 0 1 1 1 1
-0 0 1 0 0 0 1 0
-1 1 0 1 0 0 0 1
-0 0 1 0 1 0 1 0
-1 1 0 1 0 0 0 0
-0 1 1 1 1 1 1 1
-```
-
-Then parse it by using command `python convert.py`. After that, you will get the result in the same folder
-
-Or you can use parsed input
+Using `i*2+1` or `i*2` to represent the item i has been selected or not.
+For example
 
 ```
-0 3 4 6 8
-0 2 4 6 9
-1 2 5 6 8
-1 2 4 6 9
-0 3 5 6 8
-0 2 4 7 9
-0 2 5 7 9
-1 3 5 6 8
-1 3 4 6 9
-1 3 5 6 9
+@0: a = false @1: a = true
+@2: b = false @3: b = true
+@4: c = false @5: c = true
 ```
+
+With the raw input:
+
+```
+a b c
+0 1 0
+0 0 1
+```
+
+You can use the command `cd input/ && python convert.py` to parse the input. Then it will be parsed to:
+
+```
+a b c
+0 3 4
+1 2 5
+```
+
+### Dataset
 
 Sample dataset:
 
@@ -45,15 +38,26 @@ Sample dataset:
 
 ### Build Kissat
 
-First, you need to build kissat by using command (only for the first time):
+Clone the kissat repository from
+https://github.com/arminbiere/kissat
+
+And build kissat by using command (only for the first time):
 
 ```
 cd kissat
 ./configure && make test
 ```
 
-You can run the code by cmd:
+### Run the code
+
+For run an input with selected solution, you can using `main.py`. Show the help message:
 
 ```
-python main.py
+python main.py -h
+```
+
+### Benchmark
+
+```
+python benchmark.py
 ```
