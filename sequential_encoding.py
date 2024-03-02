@@ -4,8 +4,6 @@ n: int
 k: int
 start_at: int
 
-clauses = []
-
 # 1 -> n: xi
 
 # xi => ri1
@@ -63,32 +61,16 @@ def constraint_5():
     return c
 
 def constraints(i_n, i_k, i_start_at):
-    global clauses, n, k, start_at
+    global n, k, start_at
     n = i_n
     k = i_k
     start_at = i_start_at
-    clauses.clear()
-    print("================ Constraint (1) =====================")
-    c_1 = constraint_1()
-    clauses.extend(c_1)
-    print(c_1)
-    print("================ Constraint (2) =====================")
-    c_2 = constraint_2()
-    clauses.extend(c_2)
-    print(c_2)
-    print("================ Constraint (3) =====================")
-    c_3 = constraint_3()
-    clauses.extend(c_3)
-    print(c_3)
-    print("================ Constraint (4) =====================")
-    c_4 = constraint_4()
-    clauses.extend(c_4)
-    print(c_4)
-    print("================ Constraint (5) =====================")
-    c_5 = constraint_5()
-    clauses.extend(c_5)
-    print(c_5)
-    print("=====================================================")
+    clauses = []
+    clauses.extend(constraint_1())
+    clauses.extend(constraint_2())
+    clauses.extend(constraint_3())
+    clauses.extend(constraint_4())
+    clauses.extend(constraint_5())
     return clauses
 
 def get_r(i, j):

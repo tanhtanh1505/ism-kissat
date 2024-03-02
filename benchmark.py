@@ -34,8 +34,7 @@ def get_info(input):
 
 def benchmark():
     inputs = [
-        ("./input/10_trans_6_items.txt", 6),
-        # ("./input/input_20_trans.txt", 8),
+        ("./input/input_20_trans.txt", 8),
         # ("./input/input_25_trans.txt", 9),
         # ("./input/input_28_trans.txt", 10),
         # ("./input/input_30_trans.txt", 8),
