@@ -1,4 +1,5 @@
 import sequential_encoding as se
+import helper as h
 
 num_items: int
 num_transactions: int
@@ -8,10 +9,7 @@ use_se: bool
 clauses = []
 
 def build_cnf_for_each_transaction(values, transaction_idx):
-    print("=============++++++++START LOG++++++===============")
     convert_p_to_q(values, transaction_idx)
-    print(clauses)
-    print("=============++++++END LOG++++++++===============")
 
 # q1 ↔ ¬p1 ^ ¬p2 ^ ¬p3
 # expect: ((¬q1 | ¬p1) & (¬q1 | ¬p2) & (¬q1 | ¬p3) & (q1 | p1 | p2 | p3))
@@ -19,7 +17,6 @@ def convert_p_to_q(items, transaction_idx):
     global clauses
     indice_q = num_items + transaction_idx
     neg_items = [item for item in items if item % 2 == 0]
-    print("Negated items:", neg_items)
     # constaint (5)
     clauses.extend([[-indice_q, -int(item/2+1)] for item in neg_items])
     # constaint (6)
@@ -65,21 +62,18 @@ def combinations(k, n, start_idx):
 
 def process_file(input_file):
     with open(input_file) as f:
-        print("=============+++++At least k+++++++++===============")
         if use_se:
             at_least_k_se()
         else:
             at_least_k()
         additional_constraints()
-        print(clauses)
-        print("=============+++++End At least k+++++++++===============")
+        # print(clauses)
         for i, line in enumerate(f):
             # Split the line into individual values
             transaction_idx = i + 1
             values = line.strip().split()
             values = [int(value) for value in values]
-            print("Transaction", transaction_idx)
-            print(values)
+            print("Process transaction:", transaction_idx)
             build_cnf_for_each_transaction(values, transaction_idx)
             
 
@@ -90,29 +84,16 @@ def read_params(input_file):
         num_transactions = len(lines)
         num_items = int(max([int(value) for value in [int(value) for line in lines for value in line.strip().split()]])/2 + 1)
 
-def write_cnf_to_file(output_file):
-    # find max item value in clauses
-    max_item = 0
-    for clause in clauses:
-        for item in clause:
-            max_item = max(max_item, abs(item))
-    with open(output_file, 'w') as writer:
-                # Write a line of information about the number of variables and constraints
-                writer.write("p cnf " + str(max_item) + " " + str(len(clauses)) + "\n")
-                # Write each clause to the file
-                for clause in clauses:
-                    for literal in clause:
-                        writer.write(str(literal) + " ")
-                    writer.write("0\n")
-    print("CNF written to " + output_file)
-
 def run(input_file = './input/converted_raw_data.txt', output_file = './input/input.cnf', min_supp = 6, i_use_se = False):
-    global min_support, use_se
+    global min_support, use_se, clauses
     min_support = min_supp
     use_se = i_use_se
+    clauses.clear()
     read_params(input_file)
     process_file(input_file)
-    write_cnf_to_file(output_file)
-    return num_items, num_transactions, min_support
-
-# run()
+    n_vars = h.get_max_item(clauses)
+    h.write_cnf_to_file(n_vars, clauses, output_file)
+    print("Number of items:", num_items)
+    print("Number of clauses:", len(clauses))
+    print("from build_cnf.py: ", num_items, num_transactions, min_support, n_vars, len(clauses))
+    return num_items, num_transactions, n_vars, len(clauses)

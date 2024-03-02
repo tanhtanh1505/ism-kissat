@@ -2,6 +2,7 @@ import os
 import helper as h
 import build_cnf as bc
 import argparse
+import time
 
 def call_kissat(cnf_file, out_put_path, time_out, times=0):
     os.system("./kissat/build/kissat "+cnf_file+" --time="+str(time_out)+" > "+out_put_path + str(times) +".txt")
@@ -13,30 +14,35 @@ def process(input_raw_data: str = "./input/converted_raw_data.txt",
     prefix_raw_output: str = "raw_",
     merged_name: str = "merged_equation.txt",
     use_se: bool = False,
-    time_out: int = 900):
+    time_out: int = 900,
+    find_all: bool = False):
 
     #clear old result
     os.system("rm -f "+output_folder+"*.txt")
 
     # first run to get the result
-    times = 1
+    n_solutions = 1
     # build cnf file to path_cnf
-    num_items, num_transactions, min_support = bc.run(input_raw_data, path_cnf, 6, use_se)
+    start_time = time.time()
+    n_items, n_transactions, n_vars, n_clauses = bc.run(input_raw_data, path_cnf, min_support, use_se)
     # call kissat to solve path_cnf
-    call_kissat(path_cnf, output_folder + prefix_raw_output, time_out ,times)
+    call_kissat(path_cnf, output_folder + prefix_raw_output, time_out ,n_solutions)
 
     # loop until no more result
-    # statistic and ignore solved equations
-    while True:
-        equations = h.extract_equations_from_result(output_folder + prefix_raw_output + str(times) + ".txt")
-        if len(equations) == 0:
+    # statistic and ignore solved solutions
+    while find_all:
+        solutions = h.extract_solutions_from_result(output_folder + prefix_raw_output + str(n_solutions) + ".txt")
+        if len(solutions) == 0:
             break
-        h.save_equation_to_file(output_folder + merged_name , equations, num_items, num_transactions, min_support)
-        h.ignore_solved_equations(path_cnf, equations)
-        times += 1
-        call_kissat(path_cnf,output_folder + prefix_raw_output, time_out, times)
-        # if times > 10:
+        h.save_equation_to_file(output_folder + merged_name , solutions, n_items, n_transactions, min_support)
+        h.ignore_solved_solutions(path_cnf, solutions)
+        n_solutions += 1
+        call_kissat(path_cnf,output_folder + prefix_raw_output, time_out, n_solutions)
+        # if n_solutions > 10:
         #     break
+        
+    elapsed_time = time.time() - start_time
+    return n_solutions, n_vars, n_clauses, elapsed_time
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

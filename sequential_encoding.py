@@ -96,5 +96,3 @@ def get_r(i, j):
 
 def get_x(i):
     return i+start_at
-
-constraints(5, 3, 0) # 5 items, at least 3

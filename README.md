@@ -1,3 +1,5 @@
+## Rule
+
 ## Input
 
 You can use input in raw data
@@ -33,6 +35,11 @@ Or you can use parsed input
 1 3 4 6 9
 1 3 5 6 9
 ```
+
+Sample dataset:
+
+- https://dtai.cs.kuleuven.be/CP4IM/datasets/
+- http://fimi.uantwerpen.be/data/
 
 ## Run
 

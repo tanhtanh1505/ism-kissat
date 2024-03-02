@@ -1,3 +1,11 @@
+from datetime import datetime
+import pandas as pd
+import os
+from openpyxl import load_workbook
+from openpyxl import Workbook
+from zipfile import BadZipFile
+from openpyxl.utils.dataframe import dataframe_to_rows
+
 def extract_numbers(line):
     numbers = []
     is_end = False
@@ -9,8 +17,8 @@ def extract_numbers(line):
                 break
     return numbers, is_end
 
-def extract_equations_from_result(filename):
-    equations = []
+def extract_solutions_from_result(filename):
+    solutions = []
     try:
         with open(filename, 'r') as file:
             found_result = False
@@ -22,7 +30,7 @@ def extract_equations_from_result(filename):
                         e, is_end = extract_numbers(line.strip())
                         equation.extend(e)
                         if is_end:
-                            equations.append(equation)
+                            solutions.append(equation)
                             equation = []
                 if "c ---- [ profiling ]" in line:
                     break
@@ -30,12 +38,11 @@ def extract_equations_from_result(filename):
         print("File not found.")
     except Exception as e:
         print("An error occurred:", str(e))
-    print("Equations extracted from result:", equations)
-    return equations
+    return solutions
 
-def save_equation_to_file(filename, equations, num_items, num_transactions, min_support):
+def save_equation_to_file(filename, solutions, num_items, num_transactions, min_support):
     with open(filename, 'a') as f:
-        for equation in equations:
+        for equation in solutions:
             item_set = set()
             valid_transactions = set()
             for item in equation:
@@ -53,24 +60,89 @@ def save_equation_to_file(filename, equations, num_items, num_transactions, min_
             f.write("Valid transactions: " + str(valid_transactions) + '\n')
             f.write("=================================================================\n")
 
-def ignore_solved_equations(file_input, equations):
+def ignore_solved_solutions(file_input, solutions):
     # convert all to negative
-    equations = [[-int(x) for x in equation] for equation in equations]
-    print("Equations converted to neg:", equations)
+    solutions = [[-int(x) for x in equation] for equation in solutions]
     num_clauses = 0
     num_vals = 0
     # append all to file_input
     with open(file_input, 'a') as f:
-        for equation in equations:
+        for equation in solutions:
             f.write(' '.join([str(x) for x in equation]) + '\n')
     # update the number of clauses
     with open(file_input, 'r') as f:
         lines = f.readlines()
         _,_, num_vals,num_clauses = lines[0].split()
-        new_num_clauses = int(num_clauses) + len(equations)
+        new_num_clauses = int(num_clauses) + len(solutions)
         lines[0] = "p cnf " + num_vals + " " + str(new_num_clauses) + "\n"
     # write back to file_input
     with open(file_input, 'w') as f:
         f.writelines(lines)
-    print("Ignored solved equations:", equations)
-    return equations
+    return solutions
+
+def get_max_item(clauses):
+    max_item = 0
+    for clause in clauses:
+        for item in clause:
+            max_item = max(max_item, abs(item))
+    return max_item
+
+def write_cnf_to_file(vars, clauses, output_file):
+    with open(output_file, 'w') as writer:
+        # Write a line of information about the number of variables and constraints
+        writer.write("p cnf " + str(vars) + " " + str(len(clauses)) + "\n")
+        # Write each clause to the file
+        for clause in clauses:
+            for literal in clause:
+                writer.write(str(literal) + " ")
+            writer.write("0\n")
+
+def write_data_to_excel(data, path):
+    # Generate header
+    raw_header = data[0].keys()
+    header = []
+    sub_header = []
+    list_need_merge = []
+    cur_col = 'A'
+    header_merge = ""
+    start_merge_cel = ""
+    end_merge_cel = ""
+    for idx, key in enumerate(raw_header):
+        num_sub_header = len(key.split("/"))
+        if num_sub_header > 1:
+            cur_header = key.split("/")[0]
+            header.append(cur_header)
+            sub_header.append(key.split("/")[1])
+            
+            if header_merge != cur_header:
+                if start_merge_cel != "" and end_merge_cel != "" and start_merge_cel != end_merge_cel:
+                    list_need_merge.append(f'{start_merge_cel}:{end_merge_cel}')
+                start_merge_cel = cur_col + str(1)
+                header_merge = cur_header
+            
+            end_merge_cel = cur_col + str(1)
+            if idx == len(raw_header) - 1:
+                list_need_merge.append(f'{start_merge_cel}:{end_merge_cel}')
+        else:
+            header.append(key)
+            sub_header.append("")
+            list_need_merge.append(f'{cur_col + str(1)}:{cur_col + str(2)}')
+        cur_col = chr(ord(cur_col) + 1)
+    # write to excel
+    book = Workbook()
+    sheet = book.active
+    sheet.append(header)
+    sheet.append(sub_header)
+    for d in data:
+        sheet.append([d[key] for key in raw_header])
+    for merge in list_need_merge:
+        sheet.merge_cells(merge)
+    book.save(path)
+
+# def test():
+#     df = pd.DataFrame([[1, 38.0, 2.0, 18.0, "np.nan", 22.0, 21],[1, 19, 439, 6, 452, 226,232]],
+#                   index=pd.Index(['Tumour (Positive)', 'Non-Tumour (Negative)']),
+#                   columns=pd.MultiIndex.from_product([['Decision Tree', 'Regression', 'Random'],['Tumour', 'Non-Tumour']]))
+#     df.to_excel("test.xlsx")
+
+# test()
