@@ -2,6 +2,7 @@ import subprocess
 import main as m
 import helper as h
 import time
+import os
 
 def run_script(
     input_raw_data: str = "./input/converted_raw_data.txt",
@@ -33,16 +34,23 @@ def get_info(input):
     return n_items, n_transactions
 
 def benchmark():
-    inputs = [
-        ("./input/input_20_trans.txt", 8),
-        # ("./input/input_25_trans.txt", 9),
-        # ("./input/input_28_trans.txt", 10),
-        # ("./input/input_30_trans.txt", 8),
-    ]
+    #clear old input
+    os.system("rm -f ./input/*.txt")
+
+    # generate input
+    inputs = []
+    for n_transactions in [20, 25, 28, 30]:
+        for percent_item in [10, 15, 20]:
+            for percent_k in [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99, 100]:
+                n_items = int(n_transactions * percent_item / 100)
+                min_support = int(n_transactions * percent_k / 100)
+                path = f'./input/{n_transactions}_trans_{n_items}_items.txt'
+                h.generate_input(n_items, n_transactions, path)
+                inputs.append((n_transactions, n_items, min_support, path))
+    
     excel_results = []
 
-    for input_raw_data, min_support in inputs:
-        n_items, n_transactions = get_info(input_raw_data)
+    for n_transactions, n_items, min_support, input_raw_data in inputs:
         result = {
             "input_path": input_raw_data,
             "num_items": n_items,
@@ -51,15 +59,22 @@ def benchmark():
         }
 
         # standard
-        n_solutions, n_vars, n_clauses, elapsed_time = m.process(
-            input_raw_data=input_raw_data,
-            min_support=min_support,
-            find_all=True)
-        print("Standard:", n_items, n_transactions, min_support, n_solutions, n_vars, n_clauses)
-        result["standard/vars"] = n_vars
-        result["standard/clauses"] = n_clauses
-        result["standard/solutions"] = n_solutions
-        result["standard/time"] = elapsed_time
+        if h.get_c_k_n(min_support, n_transactions) <= 8000000:
+            # if the number of clauses is too large, the standard method will be skipped
+            n_solutions, n_vars, n_clauses, elapsed_time = m.process(
+                input_raw_data=input_raw_data,
+                min_support=min_support,
+                find_all=True)
+            print("Standard:", n_items, n_transactions, min_support, n_solutions, n_vars, n_clauses)
+            result["standard/vars"] = n_vars
+            result["standard/clauses"] = n_clauses
+            result["standard/solutions"] = n_solutions
+            result["standard/time"] = elapsed_time
+        else:
+            result["standard/vars"] = "-"
+            result["standard/clauses"] = "-"
+            result["standard/solutions"] = "-"
+            result["standard/time"] = "-"
 
         # sequential encoding
         n_solutions, n_vars, n_clauses, elapsed_time = m.process(

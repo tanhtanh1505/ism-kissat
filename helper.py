@@ -1,10 +1,6 @@
-from datetime import datetime
-import pandas as pd
-import os
-from openpyxl import load_workbook
 from openpyxl import Workbook
-from zipfile import BadZipFile
-from openpyxl.utils.dataframe import dataframe_to_rows
+import random
+import math
 
 def extract_numbers(line):
     numbers = []
@@ -139,10 +135,13 @@ def write_data_to_excel(data, path):
         sheet.merge_cells(merge)
     book.save(path)
 
-# def test():
-#     df = pd.DataFrame([[1, 38.0, 2.0, 18.0, "np.nan", 22.0, 21],[1, 19, 439, 6, 452, 226,232]],
-#                   index=pd.Index(['Tumour (Positive)', 'Non-Tumour (Negative)']),
-#                   columns=pd.MultiIndex.from_product([['Decision Tree', 'Regression', 'Random'],['Tumour', 'Non-Tumour']]))
-#     df.to_excel("test.xlsx")
+def generate_input(n_items, n_transactions, output):
+    with open(output, "w") as f:
+        for i in range(n_transactions):
+            for j in range(n_items):
+                is_true = random.choice([0, 1])
+                f.write(str(j*2 + is_true) + " ")
+            f.write("0\n")
 
-# test()
+def get_c_k_n(k, n):
+    return int(math.factorial(n) / (math.factorial(k) * math.factorial(n - k)))
