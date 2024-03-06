@@ -1,6 +1,8 @@
 from openpyxl import Workbook
 import random
 import math
+import pandas as pd
+import matplotlib.pyplot as plt
 
 def extract_numbers(line):
     numbers = []
@@ -135,6 +137,44 @@ def write_data_to_excel(data, path):
         sheet.merge_cells(merge)
     book.save(path)
 
+def write_data_to_graph(path):
+    # read data from excel
+    df = pd.read_excel(path)
+    for n_items in df["num_items"].unique():
+        for n_transactions in df["num_transactions"].unique():
+            if n_items != 2 or n_transactions != 20:
+                continue
+            # create a single figure with subplots for each combination of n_items and n_transactions
+            fig, axs = plt.subplots(1, 3, figsize=(18, 5))
+            fig.suptitle(f"Number of items: {n_items}, Number of transactions: {n_transactions}")
+
+            df_filtered = df[(df["num_items"] == n_items) & (df["num_transactions"] == n_transactions)]
+
+            # subplot 1: number of clauses
+            axs[0].plot(df_filtered["min_support"], df_filtered["standard/clauses"], label="Standard", color="red")
+            axs[0].plot(df_filtered["min_support"], df_filtered["sequential_encoding/clauses"], label="Sequential Encoding", color="blue")
+            axs[0].set_xlabel("Minimum support")
+            axs[0].set_ylabel("Number of clauses")
+            axs[0].legend()
+
+            # subplot 2: time
+            axs[1].plot(df_filtered["min_support"], df_filtered["standard/time"], label="Standard", color="red")
+            axs[1].plot(df_filtered["min_support"], df_filtered["sequential_encoding/time"], label="Sequential Encoding", color="blue")
+            axs[1].set_xlabel("Minimum support")
+            axs[1].set_ylabel("Time")
+            axs[1].legend()
+
+            # subplot 3: number of variables
+            axs[2].plot(df_filtered["min_support"], df_filtered["standard/vars"], label="Standard", color="red")
+            axs[2].plot(df_filtered["min_support"], df_filtered["sequential_encoding/vars"], label="Sequential Encoding", color="blue")
+            axs[2].set_xlabel("Minimum support")
+            axs[2].set_ylabel("Number of variables")
+            axs[2].legend()
+
+            plt.tight_layout(pad=3.0)
+            plt.savefig("./output/"+str(n_items)+"_"+str(n_transactions)+".png")
+            plt.clf()
+
 def generate_input(n_items, n_transactions, output):
     with open(output, "w") as f:
         for i in range(n_transactions):
@@ -145,3 +185,5 @@ def generate_input(n_items, n_transactions, output):
 
 def get_c_k_n(k, n):
     return int(math.factorial(n) / (math.factorial(k) * math.factorial(n - k)))
+
+write_data_to_graph("./output/benchmark_raw.xlsx")
