@@ -40,10 +40,8 @@ def benchmark():
     # generate input
     inputs = []
     n_items = 8
-    for n_transactions in [20, 22, 25, 28, 30]:
+    for n_transactions in [20, 22, 25, 28]:
         for min_support in [0.1, 0.2, 0.3 ,0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95]:
-            if n_transactions > 22:
-                continue
             path = f'./input/{n_items}_items_{n_transactions}_trans.txt'
             h.generate_input(n_items, n_transactions, path)
             inputs.append((n_transactions, n_items, min_support, path))
@@ -58,8 +56,8 @@ def benchmark():
             "min_support": min_support
         }
 
-        if h.get_c_k_n(n_transactions - int(n_transactions*min_support) + 1, n_transactions) > 8000000:
-            continue
+        # if h.get_c_k_n(n_transactions - int(n_transactions*min_support) + 1, n_transactions) > 8000000:
+        #     continue
         
         # standard
         n_solutions, n_vars, n_clauses, elapsed_time = m.process(

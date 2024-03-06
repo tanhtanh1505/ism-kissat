@@ -14,7 +14,7 @@ def process(input_raw_data: str = "./input/converted_raw_data.txt",
     prefix_raw_output: str = "raw_",
     merged_name: str = "merged_equation.txt",
     use_se: bool = False,
-    time_out: int = 900,
+    time_out: int = 9000,
     find_all: bool = False):
 
     #clear old result
