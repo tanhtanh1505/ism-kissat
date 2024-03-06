@@ -1,5 +1,6 @@
 import sequential_encoding as se
 import helper as h
+import math
 
 num_items: int
 num_transactions: int
@@ -78,13 +79,14 @@ def process_file(input_file):
             
 
 def read_params(input_file):
-    global num_items, num_transactions
+    global num_items, num_transactions, min_support
     with open(input_file) as f:
         lines = f.readlines()
         num_transactions = len(lines)
+        min_support = int(math.ceil(min_support * num_transactions))
         num_items = int(max([int(value) for value in [int(value) for line in lines for value in line.strip().split()]])/2 + 1)
 
-def run(input_file = './input/converted_raw_data.txt', output_file = './input/input.cnf', min_supp = 6, i_use_se = False):
+def run(input_file = './input/converted_raw_data.txt', output_file = './input/input.cnf', min_supp = 0.2, i_use_se = False):
     global min_support, use_se, clauses
     min_support = min_supp
     use_se = i_use_se

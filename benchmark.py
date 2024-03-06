@@ -7,7 +7,7 @@ import os
 def run_script(
     input_raw_data: str = "./input/converted_raw_data.txt",
     path_cnf: str = "./input/input.cnf",
-    min_support: int = 6,
+    min_support: int = 0.2,
     output_folder: str = "./output/standard/",
     prefix_raw_output: str = "raw_",
     merged_name: str = "merged_equation.txt",
@@ -39,14 +39,14 @@ def benchmark():
 
     # generate input
     inputs = []
-    for n_transactions in [20, 25, 28, 30]:
-        for percent_item in [10, 15, 20]:
-            for percent_k in [5, 10, 20, 30, 40, 50, 60, 70, 80, 90, 95, 99, 100]:
-                n_items = int(n_transactions * percent_item / 100)
-                min_support = int(n_transactions * percent_k / 100)
-                path = f'./input/{n_transactions}_trans_{n_items}_items.txt'
-                h.generate_input(n_items, n_transactions, path)
-                inputs.append((n_transactions, n_items, min_support, path))
+    n_items = 8
+    for n_transactions in [20, 22, 25, 28, 30]:
+        for min_support in [0.1, 0.2, 0.3 ,0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95]:
+            if n_transactions > 22:
+                continue
+            path = f'./input/{n_items}_items_{n_transactions}_trans.txt'
+            h.generate_input(n_items, n_transactions, path)
+            inputs.append((n_transactions, n_items, min_support, path))
     
     excel_results = []
 
@@ -58,24 +58,20 @@ def benchmark():
             "min_support": min_support
         }
 
+        if h.get_c_k_n(n_transactions - int(n_transactions*min_support) + 1, n_transactions) > 8000000:
+            continue
+        
         # standard
-        if h.get_c_k_n(min_support, n_transactions) <= 8000000:
-            # if the number of clauses is too large, the standard method will be skipped
-            n_solutions, n_vars, n_clauses, elapsed_time = m.process(
-                input_raw_data=input_raw_data,
-                min_support=min_support,
-                find_all=True)
-            print("Standard:", n_items, n_transactions, min_support, n_solutions, n_vars, n_clauses)
-            result["standard/vars"] = n_vars
-            result["standard/clauses"] = n_clauses
-            result["standard/solutions"] = n_solutions
-            result["standard/time"] = elapsed_time
-        else:
-            result["standard/vars"] = "-"
-            result["standard/clauses"] = "-"
-            result["standard/solutions"] = "-"
-            result["standard/time"] = "-"
-
+        n_solutions, n_vars, n_clauses, elapsed_time = m.process(
+            input_raw_data=input_raw_data,
+            min_support=min_support,
+            find_all=True)
+        print("Standard:", n_items, n_transactions, min_support, n_solutions, n_vars, n_clauses)
+        result["standard/vars"] = n_vars
+        result["standard/clauses"] = n_clauses
+        result["standard/solutions"] = n_solutions
+        result["standard/time"] = elapsed_time
+        
         # sequential encoding
         n_solutions, n_vars, n_clauses, elapsed_time = m.process(
             input_raw_data=input_raw_data,
@@ -91,8 +87,12 @@ def benchmark():
 
         excel_results.append(result)
     #get unique file name
-    name = time.strftime("%Y%m%d_%H%M%S")
-    h.write_data_to_excel(excel_results, "./output/benchmark_"+name+".xlsx")
+    t = time.strftime("%Y%m%d_%H%M%S")
+    raw_output_path = f'./output/benchmark_raw_{t}.xlsx'
+    output_path = f'./output/benchmark_{t}.xlsx'
+    h.write_data_to_excel(excel_results, raw_output_path)
+    h.write_data_to_excel(excel_results, output_path, False)
+    h.write_data_to_graph(raw_output_path)
     
 
 if __name__ == "__main__":

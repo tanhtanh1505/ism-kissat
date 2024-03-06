@@ -95,7 +95,22 @@ def write_cnf_to_file(vars, clauses, output_file):
                 writer.write(str(literal) + " ")
             writer.write("0\n")
 
-def write_data_to_excel(data, path):
+def write_data_to_excel(data, path, is_raw = True):
+    if is_raw:
+        # Generate header
+        raw_header = data[0].keys()
+        header = []
+        for key in raw_header:
+            header.append(key)
+        # write to excel
+        book = Workbook()
+        sheet = book.active
+        sheet.append(header)
+        for d in data:
+            sheet.append([d[key] for key in raw_header])
+        book.save(path)
+        return
+    
     # Generate header
     raw_header = data[0].keys()
     header = []
@@ -142,8 +157,6 @@ def write_data_to_graph(path):
     df = pd.read_excel(path)
     for n_items in df["num_items"].unique():
         for n_transactions in df["num_transactions"].unique():
-            if n_items != 2 or n_transactions != 20:
-                continue
             # create a single figure with subplots for each combination of n_items and n_transactions
             fig, axs = plt.subplots(1, 3, figsize=(18, 5))
             fig.suptitle(f"Number of items: {n_items}, Number of transactions: {n_transactions}")
@@ -185,5 +198,3 @@ def generate_input(n_items, n_transactions, output):
 
 def get_c_k_n(k, n):
     return int(math.factorial(n) / (math.factorial(k) * math.factorial(n - k)))
-
-write_data_to_graph("./output/benchmark_raw.xlsx")
