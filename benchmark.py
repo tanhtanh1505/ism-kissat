@@ -40,7 +40,7 @@ def benchmark():
     # generate input
     inputs = []
     n_items = 8
-    for n_transactions in [20, 22, 25, 28]:
+    for n_transactions in [20, 21, 22, 23, 24, 25, 26, 27, 28]:
         for min_support in [0.1, 0.2, 0.3 ,0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95]:
             path = f'./input/{n_items}_items_{n_transactions}_trans.txt'
             h.generate_input(n_items, n_transactions, path)
@@ -85,12 +85,15 @@ def benchmark():
 
         excel_results.append(result)
     #get unique file name
-    t = time.strftime("%Y%m%d_%H%M%S")
-    raw_output_path = f'./output/benchmark_raw_{t}.xlsx'
-    output_path = f'./output/benchmark_{t}.xlsx'
+    t = time.strftime("%Y%m%d_%H")
+    # create output path if not exist
+    output_path = f'./output/{t}'
+    os.makedirs(output_path, exist_ok=True)
+    raw_output_path = f'./output/{t}/benchmark_raw.xlsx'
+    beauty_output_path = f'./output/{t}/benchmark.xlsx'
     h.write_data_to_excel(excel_results, raw_output_path)
-    h.write_data_to_excel(excel_results, output_path, False)
-    h.write_data_to_graph(raw_output_path)
+    h.write_data_to_excel(excel_results, beauty_output_path, False)
+    h.write_data_to_graph(raw_output_path, output_path)
     
 
 if __name__ == "__main__":

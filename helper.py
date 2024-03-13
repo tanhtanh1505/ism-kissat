@@ -3,6 +3,7 @@ import random
 import math
 import pandas as pd
 import matplotlib.pyplot as plt
+import os
 
 def extract_numbers(line):
     numbers = []
@@ -152,9 +153,16 @@ def write_data_to_excel(data, path, is_raw = True):
         sheet.merge_cells(merge)
     book.save(path)
 
-def write_data_to_graph(path):
+def write_data_to_graph(data_from_path, output_path):
+    min_support_path = f'{output_path}/by_min_support'
+    transactions_path = f'{output_path}/by_transactions'
+    
+    # create output path if not exist
+    os.makedirs(min_support_path, exist_ok=True)
+    os.makedirs(transactions_path, exist_ok=True)
+
     # read data from excel
-    df = pd.read_excel(path)
+    df = pd.read_excel(data_from_path)
     for n_items in df["num_items"].unique():
         for n_transactions in df["num_transactions"].unique():
             # create a single figure with subplots for each combination of n_items and n_transactions
@@ -185,7 +193,39 @@ def write_data_to_graph(path):
             axs[2].legend()
 
             plt.tight_layout(pad=3.0)
-            plt.savefig("./output/"+str(n_items)+"_"+str(n_transactions)+".png")
+            plt.savefig(f'{min_support_path}/n_trans_{n_transactions}.png')
+            plt.clf()
+
+        for min_support in df["min_support"].unique():
+            # create a single figure with subplots for each combination of n_items and min_support
+            fig, axs = plt.subplots(1, 3, figsize=(18, 5))
+            fig.suptitle(f"Number of items: {n_items}, Minimum support: {min_support}")
+
+            df_filtered = df[(df["num_items"] == n_items) & (df["min_support"] == min_support)]
+
+            # subplot 1: number of clauses
+            axs[0].plot(df_filtered["num_transactions"], df_filtered["standard/clauses"], label="Standard", color="red")
+            axs[0].plot(df_filtered["num_transactions"], df_filtered["sequential_encoding/clauses"], label="Sequential Encoding", color="blue")
+            axs[0].set_xlabel("Number of transactions")
+            axs[0].set_ylabel("Number of clauses")
+            axs[0].legend()
+
+            # subplot 2: time
+            axs[1].plot(df_filtered["num_transactions"], df_filtered["standard/time"], label="Standard", color="red")
+            axs[1].plot(df_filtered["num_transactions"], df_filtered["sequential_encoding/time"], label="Sequential Encoding", color="blue")
+            axs[1].set_xlabel("Number of transactions")
+            axs[1].set_ylabel("Time")
+            axs[1].legend()
+
+            # subplot 3: number of variables
+            axs[2].plot(df_filtered["num_transactions"], df_filtered["standard/vars"], label="Standard", color="red")
+            axs[2].plot(df_filtered["num_transactions"], df_filtered["sequential_encoding/vars"], label="Sequential Encoding", color="blue")
+            axs[2].set_xlabel("Number of transactions")
+            axs[2].set_ylabel("Number of variables")
+            axs[2].legend()
+
+            plt.tight_layout(pad=3.0)
+            plt.savefig(f'{transactions_path}/min_supp_{min_support}.png')
             plt.clf()
 
 def generate_input(n_items, n_transactions, output):
