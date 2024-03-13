@@ -1,3 +1,10 @@
+## Description
+
+This project using Sequential Encounter Encoding to solve Itemset Mining Tasks, compare with standard SAT encoding C(n-k+1).
+
+<img src="./output/20240314_02/by_min_support/n_trans_28.png"/>
+<img src="./output/20240314_02/by_transactions/min_supp_0.7.png"/>
+
 ## Input
 
 ### Rule
