@@ -59,9 +59,16 @@ def save_equation_to_file(filename, solutions, num_items, num_transactions, min_
             f.write("Valid transactions: " + str(valid_transactions) + '\n')
             f.write("=================================================================\n")
 
-def ignore_solved_solutions(file_input, solutions):
+def ignore_solved_solutions(file_input, solutions, n_items):
     # convert all to negative
-    solutions = [[-int(x) for x in equation] for equation in solutions]
+    tmp_equation = []
+    for x in range(n_items):
+        tmp_equation.append(solutions[0][x] * -1)
+    tmp_equation.append(0)
+    print("Ignore solution: ", tmp_equation)
+    solutions.remove(solutions[0])
+    solutions.append(tmp_equation)
+
     num_clauses = 0
     num_vals = 0
     # append all to file_input
@@ -153,7 +160,7 @@ def write_data_to_excel(data, path, is_raw = True):
         sheet.merge_cells(merge)
     book.save(path)
 
-def write_data_to_graph(data_from_path, output_path):
+def write_data_to_graph(data_from_path, output_path, modes = [1, 2, 3]):
     min_support_path = f'{output_path}/by_min_support'
     transactions_path = f'{output_path}/by_transactions'
     
@@ -172,22 +179,34 @@ def write_data_to_graph(data_from_path, output_path):
             df_filtered = df[(df["num_items"] == n_items) & (df["num_transactions"] == n_transactions)]
 
             # subplot 1: number of clauses
-            axs[0].plot(df_filtered["min_support"], df_filtered["standard/clauses"], label="Standard", color="red")
-            axs[0].plot(df_filtered["min_support"], df_filtered["sequential_encoding/clauses"], label="Sequential Encoding", color="blue")
+            if 1 in modes:
+                axs[0].plot(df_filtered["min_support"], df_filtered["standard/clauses"], label="Standard", color="red")
+            if 3 in modes:
+                axs[0].plot(df_filtered["min_support"], df_filtered["old_sequential_encoding/clauses"], label="Old Sequential Encoding", color="orange")
+            if 2 in modes:
+                axs[0].plot(df_filtered["min_support"], df_filtered["sequential_encoding/clauses"], label="Sequential Encoding", color="green")
             axs[0].set_xlabel("Minimum support")
             axs[0].set_ylabel("Number of clauses")
             axs[0].legend()
 
             # subplot 2: time
-            axs[1].plot(df_filtered["min_support"], df_filtered["standard/time"], label="Standard", color="red")
-            axs[1].plot(df_filtered["min_support"], df_filtered["sequential_encoding/time"], label="Sequential Encoding", color="blue")
+            if 1 in modes:
+                axs[1].plot(df_filtered["min_support"], df_filtered["standard/time"], label="Standard", color="red")
+            if 3 in modes:
+                axs[1].plot(df_filtered["min_support"], df_filtered["old_sequential_encoding/time"], label="Old Sequential Encoding", color="orange")
+            if 2 in modes:
+                axs[1].plot(df_filtered["min_support"], df_filtered["sequential_encoding/time"], label="Sequential Encoding", color="green")
             axs[1].set_xlabel("Minimum support")
             axs[1].set_ylabel("Time")
             axs[1].legend()
 
             # subplot 3: number of variables
-            axs[2].plot(df_filtered["min_support"], df_filtered["standard/vars"], label="Standard", color="red")
-            axs[2].plot(df_filtered["min_support"], df_filtered["sequential_encoding/vars"], label="Sequential Encoding", color="blue")
+            if 1 in modes:
+                axs[2].plot(df_filtered["min_support"], df_filtered["standard/vars"], label="Standard", color="red")
+            if 3 in modes:
+                axs[2].plot(df_filtered["min_support"], df_filtered["old_sequential_encoding/vars"], label="Old Sequential Encoding", color="orange")
+            if 2 in modes:
+                axs[2].plot(df_filtered["min_support"], df_filtered["sequential_encoding/vars"], label="Sequential Encoding", color="green")
             axs[2].set_xlabel("Minimum support")
             axs[2].set_ylabel("Number of variables")
             axs[2].legend()
@@ -204,22 +223,34 @@ def write_data_to_graph(data_from_path, output_path):
             df_filtered = df[(df["num_items"] == n_items) & (df["min_support"] == min_support)]
 
             # subplot 1: number of clauses
-            axs[0].plot(df_filtered["num_transactions"], df_filtered["standard/clauses"], label="Standard", color="red")
-            axs[0].plot(df_filtered["num_transactions"], df_filtered["sequential_encoding/clauses"], label="Sequential Encoding", color="blue")
+            if 1 in modes:
+                axs[0].plot(df_filtered["num_transactions"], df_filtered["standard/clauses"], label="Standard", color="red")
+            if 3 in modes:
+                axs[0].plot(df_filtered["num_transactions"], df_filtered["old_sequential_encoding/clauses"], label="Old Sequential Encoding", color="orange")
+            if 2 in modes:
+                axs[0].plot(df_filtered["num_transactions"], df_filtered["sequential_encoding/clauses"], label="Sequential Encoding", color="green")
             axs[0].set_xlabel("Number of transactions")
             axs[0].set_ylabel("Number of clauses")
             axs[0].legend()
 
             # subplot 2: time
-            axs[1].plot(df_filtered["num_transactions"], df_filtered["standard/time"], label="Standard", color="red")
-            axs[1].plot(df_filtered["num_transactions"], df_filtered["sequential_encoding/time"], label="Sequential Encoding", color="blue")
+            if 1 in modes:
+                axs[1].plot(df_filtered["num_transactions"], df_filtered["standard/time"], label="Standard", color="red")
+            if 3 in modes:    
+                axs[1].plot(df_filtered["num_transactions"], df_filtered["old_sequential_encoding/time"], label="Old Sequential Encoding", color="orange")
+            if 2 in modes:
+                axs[1].plot(df_filtered["num_transactions"], df_filtered["sequential_encoding/time"], label="Sequential Encoding", color="green")
             axs[1].set_xlabel("Number of transactions")
             axs[1].set_ylabel("Time")
             axs[1].legend()
 
             # subplot 3: number of variables
-            axs[2].plot(df_filtered["num_transactions"], df_filtered["standard/vars"], label="Standard", color="red")
-            axs[2].plot(df_filtered["num_transactions"], df_filtered["sequential_encoding/vars"], label="Sequential Encoding", color="blue")
+            if 1 in modes:
+                axs[2].plot(df_filtered["num_transactions"], df_filtered["standard/vars"], label="Standard", color="red")
+            if 3 in modes:
+                axs[2].plot(df_filtered["num_transactions"], df_filtered["old_sequential_encoding/vars"], label="Old Sequential Encoding", color="orange")
+            if 2 in modes:
+                axs[2].plot(df_filtered["num_transactions"], df_filtered["sequential_encoding/vars"], label="Sequential Encoding", color="green")
             axs[2].set_xlabel("Number of transactions")
             axs[2].set_ylabel("Number of variables")
             axs[2].legend()
@@ -234,7 +265,7 @@ def generate_input(n_items, n_transactions, output):
             for j in range(n_items):
                 is_true = random.choice([0, 1])
                 f.write(str(j*2 + is_true) + " ")
-            f.write("0\n")
+            f.write("\n")
 
 def get_c_k_n(k, n):
     return int(math.factorial(n) / (math.factorial(k) * math.factorial(n - k)))

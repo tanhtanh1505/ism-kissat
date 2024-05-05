@@ -1,11 +1,12 @@
 import sequential_encoding as se
+import sequential_encoding_old as old_se
 import helper as h
 import math
 
 num_items: int
 num_transactions: int
 min_support: int
-use_se: bool
+mode: int # 1: standard, 2: sequential encoding, 3: old sequential encoding
 
 clauses = []
 
@@ -46,6 +47,10 @@ def at_least_k_se():
     c = se.constraints(num_transactions, min_support, num_items)
     clauses.extend(c)
 
+def at_least_k_old_se():
+    global clauses
+    c = old_se.constraints(num_transactions, min_support, num_items)
+    clauses.extend(c)
 
 def combinations(k, n, start_idx):
     def backtrack(start, combination):
@@ -63,12 +68,13 @@ def combinations(k, n, start_idx):
 
 def process_file(input_file):
     with open(input_file) as f:
-        if use_se:
+        if mode == 2:
             at_least_k_se()
+        elif mode == 3:
+            at_least_k_old_se()
         else:
             at_least_k()
         additional_constraints()
-        # print(clauses)
         for i, line in enumerate(f):
             # Split the line into individual values
             transaction_idx = i + 1
@@ -86,10 +92,10 @@ def read_params(input_file):
         min_support = int(math.ceil(min_support * num_transactions))
         num_items = int(max([int(value) for value in [int(value) for line in lines for value in line.strip().split()]])/2 + 1)
 
-def run(input_file = './input/converted_raw_data.txt', output_file = './input/input.cnf', min_supp = 0.2, i_use_se = False):
-    global min_support, use_se, clauses
+def run(input_file = './input/converted_raw_data.txt', output_file = './input/input.cnf', min_supp = 0.2, i_mode = 2):
+    global min_support, mode, clauses
     min_support = min_supp
-    use_se = i_use_se
+    mode = i_mode
     clauses.clear()
     read_params(input_file)
     process_file(input_file)

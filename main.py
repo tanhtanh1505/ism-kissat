@@ -13,8 +13,8 @@ def process(input_raw_data: str = "./input/converted_raw_data.txt",
     output_folder: str = "./output/standard/",
     prefix_raw_output: str = "raw_",
     merged_name: str = "merged_equation.txt",
-    use_se: bool = False,
-    time_out: int = 9000,
+    mode: int = 2, # 1: standard, 2: sequential encoding, 3: old sequential encoding
+    time_out: int = 900,
     find_all: bool = False):
 
     #clear old result
@@ -24,7 +24,7 @@ def process(input_raw_data: str = "./input/converted_raw_data.txt",
     n_solutions = 1
     # build cnf file to path_cnf
     start_time = time.time()
-    n_items, n_transactions, n_vars, n_clauses = bc.run(input_raw_data, path_cnf, min_support, use_se)
+    n_items, n_transactions, n_vars, n_clauses = bc.run(input_raw_data, path_cnf, min_support, mode)
     # call kissat to solve path_cnf
     call_kissat(path_cnf, output_folder + prefix_raw_output, time_out ,n_solutions)
 
@@ -35,7 +35,7 @@ def process(input_raw_data: str = "./input/converted_raw_data.txt",
         if len(solutions) == 0:
             break
         h.save_equation_to_file(output_folder + merged_name , solutions, n_items, n_transactions, min_support)
-        h.ignore_solved_solutions(path_cnf, solutions)
+        h.ignore_solved_solutions(path_cnf, solutions, n_items)
         n_solutions += 1
         call_kissat(path_cnf,output_folder + prefix_raw_output, time_out, n_solutions)
         # if n_solutions > 10:
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     parser.add_argument('--output-folder', type=str, default='./output/standard/', help='Path to the output folder', required=False, dest='output_folder')
     parser.add_argument('--prefix-raw-output', type=str, default='raw_', help='Prefix for the raw output files', required=False, dest='prefix_raw_output')
     parser.add_argument('--merged-name', type=str, default='merged_equation.txt', help='Name of the merged equation file', required=False, dest='merged_name')
-    parser.add_argument('--use-se', type=bool, default=True, help='Use sequential encoding', required=False, dest='use_se')
+    parser.add_argument('--mode', type=bool, default=True, help='Use sequential encoding', required=False, dest='mode')
     parser.add_argument('--time-out', type=int, default=900, help='Time out for kissat', required=False, dest='time_out')
     args = parser.parse_args()
-    process(args.input_raw_data, args.path_cnf, args.min_support, args.output_folder, args.prefix_raw_output, args.merged_name, args.use_se, args.time_out)
+    process(args.input_raw_data, args.path_cnf, args.min_support, args.output_folder, args.prefix_raw_output, args.merged_name, args.mode, args.time_out)
