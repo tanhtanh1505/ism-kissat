@@ -1,11 +1,8 @@
 /input/*.txt
 /input/*.cnf
 /output
-!/output/sequential_encoding/
-!/output/standard/
-!/output/old_sequential_encoding/
-/output/sequential_encoding/*.txt
-/output/standard/*.txt
-/output/old_sequential_encoding/*.txt
+!output/sequential_encoding/
+!output/standard/
+!output/old_sequential_encoding/
 /kissat
 /__pycache__
