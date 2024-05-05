@@ -48,8 +48,6 @@ def constraints(i_n, i_k, i_start_at):
     clauses.extend(constraint_2())
     clauses.extend(constraint_3())
     clauses.extend(constraint_4())
-    print("Len clauses: ", len(clauses))
-    print("Must be: ", 2*n*k + 2*n - 3*k +1)
     return clauses
 
 def get_r(i, j):

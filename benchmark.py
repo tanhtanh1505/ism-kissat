@@ -57,7 +57,7 @@ def benchmark(modes=[1, 2, 3], gen_input=False, auto_save_each_test=False):
         os.system("rm -f ./input/*.txt")
         inputs = []
         n_items = 8
-        for n_transactions in [26, 27, 28]:
+        for n_transactions in [20]:
             for min_support in [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95]:
                 path = f'./input/{n_items}_items_{n_transactions}_trans.txt'
                 h.generate_input(n_items, n_transactions, path)

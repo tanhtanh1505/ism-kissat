@@ -31,11 +31,11 @@ def process(input_raw_data: str = "./input/converted_raw_data.txt",
     # loop until no more result
     # statistic and ignore solved solutions
     while find_all:
-        solutions = h.extract_solutions_from_result(output_folder + prefix_raw_output + str(n_solutions) + ".txt")
-        if len(solutions) == 0:
+        equations = h.extract_solutions_from_result(output_folder + prefix_raw_output + str(n_solutions) + ".txt")
+        if len(equations) == 0:
             break
-        h.save_equation_to_file(output_folder + merged_name , solutions, n_items, n_transactions, min_support)
-        h.ignore_solved_solutions(path_cnf, solutions, n_items)
+        h.save_equation_to_file(output_folder + merged_name , equations, n_items, n_transactions, min_support)
+        h.ignore_solved_solutions(path_cnf, equations, n_items)
         n_solutions += 1
         call_kissat(path_cnf,output_folder + prefix_raw_output, time_out, n_solutions)
         # if n_solutions > 10:

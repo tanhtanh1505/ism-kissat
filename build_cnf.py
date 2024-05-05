@@ -1,5 +1,6 @@
-import sequential_encoding as se
-import sequential_encoding_old as old_se
+import methods.sequential_encoding as se
+import methods.sequential_encoding_old as old_se
+import methods.standard as st
 import helper as h
 import math
 
@@ -10,12 +11,9 @@ mode: int # 1: standard, 2: sequential encoding, 3: old sequential encoding
 
 clauses = []
 
-def build_cnf_for_each_transaction(values, transaction_idx):
-    convert_p_to_q(values, transaction_idx)
-
 # q1 ↔ ¬p1 ^ ¬p2 ^ ¬p3
 # expect: ((¬q1 | ¬p1) & (¬q1 | ¬p2) & (¬q1 | ¬p3) & (q1 | p1 | p2 | p3))
-def convert_p_to_q(items, transaction_idx):
+def build_cnf_for_each_transaction(items, transaction_idx):
     global clauses
     indice_q = num_items + transaction_idx
     neg_items = [item for item in items if item % 2 == 0]
@@ -26,21 +24,20 @@ def convert_p_to_q(items, transaction_idx):
     c_6.extend([int(item/2+1) for item in neg_items])
     clauses.append(c_6)
 
-def at_least_k():
-    global clauses
-    # at least k: q1 + q2 + q3 + ... + qn >= k
-    c_4 = combinations(num_transactions - min_support + 1, num_transactions, num_items)
-    clauses.extend(c_4)
-    # at least 1 transaction
-    c_4_1 = [i + num_items for i in range(1,num_transactions+1)]
-    clauses.append(c_4_1)
-
 def additional_constraints():
     global clauses
     # at least 1 item in set
     c = [i for i in range(1,num_items+1)]
     clauses.append(c)
-    
+
+def at_least_k():
+    global clauses
+    # at least k: q1 + q2 + q3 + ... + qn >= k
+    c_4 = st.combinations(num_transactions - min_support + 1, num_transactions, num_items)
+    clauses.extend(c_4)
+    # at least 1 transaction
+    c_4_1 = [i + num_items for i in range(1,num_transactions+1)]
+    clauses.append(c_4_1)
 
 def at_least_k_se():
     global clauses
@@ -51,20 +48,6 @@ def at_least_k_old_se():
     global clauses
     c = old_se.constraints(num_transactions, min_support, num_items)
     clauses.extend(c)
-
-def combinations(k, n, start_idx):
-    def backtrack(start, combination):
-        if len(combination) == k:
-            combinations_list.append(combination[:])
-            return
-        for i in range(start, n + 1):
-            combination.append(i + start_idx)
-            backtrack(i + 1, combination)
-            combination.pop()
-
-    combinations_list = []
-    backtrack(1, [])
-    return combinations_list
 
 def process_file(input_file):
     with open(input_file) as f:
@@ -101,7 +84,4 @@ def run(input_file = './input/converted_raw_data.txt', output_file = './input/in
     process_file(input_file)
     n_vars = h.get_max_item(clauses)
     h.write_cnf_to_file(n_vars, clauses, output_file)
-    print("Number of items:", num_items)
-    print("Number of clauses:", len(clauses))
-    print("from build_cnf.py: ", num_items, num_transactions, min_support, n_vars, len(clauses))
     return num_items, num_transactions, n_vars, len(clauses)
